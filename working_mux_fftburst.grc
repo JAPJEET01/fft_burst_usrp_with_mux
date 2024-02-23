@@ -1,0 +1,173 @@
+options:
+  parameters:
+    author: usrp
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: dwdsfwdw
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Not titled yet
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: samp_rate
+  id: variable
+  parameters:
+    comment: ''
+    value: '32000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [184, 12]
+    rotation: 0
+    state: enabled
+- name: blocks_file_source_0
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: /home/usrp/Music/received_data.iq
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: complex
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [360, 288.0]
+    rotation: 0
+    state: enabled
+- name: blocks_stream_mux_0
+  id: blocks_stream_mux
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    lengths: (1, 737280)
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_inputs: '2'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1088, 288.0]
+    rotation: 0
+    state: enabled
+- name: epy_block_1_0
+  id: epy_block
+  parameters:
+    _source_code: "import numpy as np\nfrom gnuradio import gr\nimport serial\n\n\
+      class ArduinoSerialReader(gr.sync_block):\n    \"\"\"Custom GNU Radio block\
+      \ to read data from Arduino serial output\"\"\"\n\n    def __init__(self, port='/dev/ttyACM0',\
+      \ baudrate=9600):\n        \"\"\"Initialize the block\"\"\"\n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Arduino Serial Reader',\n            in_sig=None,\n\
+      \            out_sig=[np.uint8]  # Change the output signature if necessary\n\
+      \        )\n        self.serial_port = serial.Serial(port, baudrate)\n\n   \
+      \ def work(self, input_items, output_items):\n        \"\"\"Read data from serial\
+      \ port and emit\"\"\"\n        data = self.serial_port.read(512)  # Read serial\
+      \ data, adjust buffer size as needed\n        output_items[0][:len(data)] =\
+      \ np.frombuffer(data, dtype=np.uint8)\n        return len(data)\n"
+    affinity: ''
+    alias: ''
+    baudrate: '9600'
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    port: '''/dev/ttyACM0'''
+  states:
+    _io_cache: ('Arduino Serial Reader', 'ArduinoSerialReader', [('port', "'/dev/ttyACM0'"),
+      ('baudrate', '9600')], [], [('0', 'byte', 1)], 'Custom GNU Radio block to read
+      data from Arduino serial output', [])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [672, 144.0]
+    rotation: 0
+    state: enabled
+- name: iridium_fft_burst_tagger_0_0
+  id: iridium_fft_burst_tagger
+  parameters:
+    affinity: ''
+    alias: ''
+    burst_post_len: '1000'
+    burst_pre_len: '1000'
+    burst_width: '100'
+    center_frequency: 98.3e6
+    comment: ''
+    debug: 'False'
+    fft_size: '1024'
+    history_size: '512'
+    max_burst_len: '100'
+    max_bursts: '10'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    sample_rate: int(20e6)
+    threshold: '7'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [648, 240.0]
+    rotation: 0
+    state: enabled
+- name: network_tcp_sink_0
+  id: network_tcp_sink
+  parameters:
+    addr: 127.0.0.1
+    affinity: ''
+    alias: ''
+    comment: ''
+    mode: '2'
+    port: '6000'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1304, 168.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [blocks_file_source_0, '0', iridium_fft_burst_tagger_0_0, '0']
+- [blocks_stream_mux_0, '0', network_tcp_sink_0, '0']
+- [epy_block_1_0, '0', blocks_stream_mux_0, '0']
+- [iridium_fft_burst_tagger_0_0, '0', blocks_stream_mux_0, '1']
+
+metadata:
+  file_format: 1
+  grc_version: v3.11.0.0git-655-g7d61746e
